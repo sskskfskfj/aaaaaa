@@ -9,9 +9,12 @@ html(lang="en")
     header 
         h1 It works
     main
+        form#nick
+            input(type="text", placeholder="choose a nickname", required)
+            button(type="submit") Save
         ul 
             
-        form 
-            input(type="text", placeholder="write", required)
+        form#message 
+            input(type="text", placeholder="write", requied)
             button(type="submit") Send
     script(src="/public/js/app.js")

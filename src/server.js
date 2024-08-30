@@ -23,11 +23,24 @@ const webSockets = []
 //webSocket은 브라우저와의 연결
 wss.on("connection",(webSocket)=>{
     webSockets.push(webSocket)
+    webSocket["nickname"] ="Anon"
+
     webSocket.on("close", socketDisconnected)
     console.log("connected to browser")
-    webSocket.on("message", (message)=>{
-        webSockets.forEach(aSocket => aSocket.send(message.toString("utf-8")))
-        console.log(message.toString("utf-8"))
+    webSocket.on("message", (msg)=>{
+        const message = JSON.parse(msg)
+        
+        switch(message.type){
+            case "new_message":
+                console.log(message.payload)
+                webSockets.forEach((aSocket) => 
+                    aSocket.send(`${webSocket.nickname} : ${message.payload}`
+                ))
+            case "nickname":
+                console.log(message.payload)
+                webSocket["nickname"] = message.payload
+        }
+        
     })
 }) 
 
