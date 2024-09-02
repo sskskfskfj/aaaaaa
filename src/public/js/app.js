@@ -9,11 +9,12 @@ function makeMessage(type, payload){
     return JSON.stringify(msg)
 }
 
-
+//ws 서버가 열렸을 때 나오는 메세지
 webSocket.addEventListener("open", ()=>{
     console.log("connected to server")
 })
 
+//websocket에 message가 들어왔을 때 처리
 webSocket.addEventListener("message", (message)=>{
     console.log("new message", message.data)
     const li = document.createElement("li")
@@ -39,7 +40,5 @@ function handleNickSubmit(event){
     input.value = ""
 }
 
-
 messageForm.addEventListener("submit", handleSubmit)
-
 nickForm.addEventListener("submit", handleNickSubmit);

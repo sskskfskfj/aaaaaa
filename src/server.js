@@ -17,7 +17,7 @@ const wss = new WebSocket.Server({server})
 
 function socketDisconnected(){console.log("client 연결 끊김")}
 
-//가짜 데이터베이스
+//접속한 socket 저장
 const webSockets = []
 
 //webSocket은 브라우저와의 연결
