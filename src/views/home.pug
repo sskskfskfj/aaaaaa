@@ -8,13 +8,12 @@ html(lang="en")
     body 
     header 
         h1 It works
+
     main
-        form#nick
-            input(type="text", placeholder="choose a nickname", required)
-            button(type="submit") Save
-        ul 
-            
-        form#message 
-            input(type="text", placeholder="write", requied)
-            button(type="submit") Send
+        div#welcome
+            form
+                input(placeholder="room name", type="text")
+                button Enter Room
+    script(src="/socket.io/socket.io.js")    
     script(src="/public/js/app.js")
+    

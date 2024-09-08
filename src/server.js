@@ -1,6 +1,7 @@
 import express from "express"
 import http from "http"
-import WebSocket from "ws"
+import SocketIO from "socket.io"
+
 
 const app = express()
 
@@ -11,39 +12,50 @@ app.get("/", (_, res)=>{res.render("home")})
 app.get("/*", (_, res)=>{res.redirect("/")})
 
 const handleListen = ()=>console.log(`listening on https://localhost:3000`)
-const server = http.createServer(app)
-const wss = new WebSocket.Server({server})
+const httpServer = http.createServer(app)
+const ws = SocketIO(httpServer)
+
+ws.on("connection", (socket) =>{
+    socket.on('enter_room', (roomName,done) => {
+        console.log(roomName.payload)
+        setTimeout(() => {
+            done('hello')
+        }, 10000)
+    })
+
+})
 
 
 function socketDisconnected(){console.log("client 연결 끊김")}
 
 //접속한 socket 저장
-const webSockets = []
+// const webSockets = []
 
-//webSocket은 브라우저와의 연결
-wss.on("connection",(webSocket)=>{
-    webSockets.push(webSocket)
-    webSocket["nickname"] ="Anon"
+// //webSocket은 브라우저와의 연결
+// wss.on("connection",(webSocket)=>{
+//     webSockets.push(webSocket)
+//     webSocket["nickname"] ="Anon"
 
-    webSocket.on("close", socketDisconnected)
-    console.log("connected to browser")
-    webSocket.on("message", (msg)=>{
-        const message = JSON.parse(msg)
+//     webSocket.on("close", socketDisconnected)
+//     console.log("connected to browser")
+//     webSocket.on("message", (msg)=>{
+//         const message = JSON.parse(msg)
         
-        switch(message.type){
-            case "new_message":
-                console.log(message.payload)
-                webSockets.forEach((aSocket) => 
-                    aSocket.send(`${webSocket.nickname} : ${message.payload}`
-                ))
-            case "nickname":
-                console.log(message.payload)
-                webSocket["nickname"] = message.payload
-        }
+//         switch(message.type){
+//             case "new_message":
+//                 console.log(message.payload)
+//                 webSockets.forEach((aSocket) => 
+//                     aSocket.send(`${webSocket.nickname} : ${message.payload}`
+//                 ))
+//             case "nickname":
+//                 console.log(message.payload)
+//                 webSocket["nickname"] = message.payload
+//         }
         
-    })
-}) 
+//     })
+// }) 
 
-server.listen(3000, handleListen)
+httpServer.listen(3000, handleListen)
+
 
 
