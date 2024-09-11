@@ -16,13 +16,22 @@ const httpServer = http.createServer(app)
 const ws = SocketIO(httpServer)
 
 ws.on("connection", (socket) =>{
-    socket.on('enter_room', (roomName,done) => {
-        console.log(roomName.payload)
-        setTimeout(() => {
-            done('hello')
-        }, 10000)
+    socket.onAny((event) => {
+        console.log(`socket event : ${event}`)
     })
 
+    socket.on('enter_room', (roomName, showRoom) => {
+        socket.join(roomName)
+        showRoom()
+        socket.to(roomName).emit("welcome")
+        console.log("asdf")
+    })
+
+    socket.on('disconnecting', () => {
+        socket.rooms.forEach((room) => {
+            socket.to(room).emit('bye')
+        });
+    })
 })
 
 
