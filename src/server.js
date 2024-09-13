@@ -15,10 +15,27 @@ const handleListen = ()=>console.log(`listening on https://localhost:3000`);
 const httpServer = http.createServer(app);
 const ws = SocketIO(httpServer);
 
+function publicRooms(){
+
+    const {
+        sockets: {
+            adapter : {sids, rooms}
+        }
+    } = ws;
+    
+    const publicRooms = [];
+    rooms.forEach((_, key) => {
+        if(sids.get(key) == undefined){
+            publicRooms.push(key);
+        }
+    });
+    return publicRooms;
+}
+
+
 ws.on("connection", (socket) =>{
     socket["nickname"] = "Anon"
     socket.onAny((event) => {
-        console.log(ws.sockets.adapter);
         console.log(`socket event : ${event}`);
     });
 
@@ -26,7 +43,7 @@ ws.on("connection", (socket) =>{
         socket.join(roomName.payload);
         done();
         socket.to(roomName.payload).emit("welcome", socket.nickname);
-        
+        ws.sockets.emit('room_change', publicRooms());
     });
 
     socket.on('disconnecting', () => {
@@ -34,6 +51,10 @@ ws.on("connection", (socket) =>{
             socket.to(room).emit('bye', socket.nickname);
         });
     });
+
+    socket.on("disconnect", () => {
+        ws.sockets.emit("room_change", publicRooms());
+    })
 
     socket.on("new_message", (msg, roomName, done) => {
         socket.to(roomName).emit("new_message", `${socket.nickname} : ${msg}`);
