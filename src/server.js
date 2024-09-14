@@ -1,6 +1,7 @@
 import express from "express"
-// import http from "http"
-// import SocketIO from "socket.io"
+import { Route } from "express";
+import http from "http"
+import SocketIO from "socket.io"
 
 const app = express();
 function handleListen(){
@@ -12,10 +13,26 @@ app.use("/public", express.static(__dirname + "/public"));
 app.get("/", (_, res)=>{res.render("home")});
 app.get("/*", (_, res)=>{res.redirect("/")});
 
+const httpServer = http.createServer(app);
+const ws = SocketIO(httpServer);
 
-// function socketDisconnected(){console.log("client 연결 끊김");}
+ws.on("connection", socket => {
+    socket.on("join_room", (roomName) => {
+        socket.join(roomName);
+        socket.to(roomName).emit("welcome");  
+    });
+    socket.on("offer", (offer, roomName) => {
+        socket.to(roomName).emit("offer", offer);
+    })
+    socket.on("answer", (ans, roomName) => {
+        socket.to(roomName).emit("answer", ans);
+    })
+    socket.on("ice", (ice, roomName) => {
+        socket.to(roomName).emit("ice", ice);
+    })
+});
 
-app.listen(3000, handleListen);
+httpServer.listen(3000, handleListen);
 
 
 
