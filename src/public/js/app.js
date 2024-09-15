@@ -6,6 +6,7 @@ const camerasSelect = document.getElementById("cameras");
 const welcome = document.getElementById("welcome");
 const call = document.getElementById("call");
 
+
 muteBtn.addEventListener("click", handleMute);
 cameraBtn.addEventListener("click", handleCamera);
 camerasSelect.addEventListener("input", handleCameraChange);
@@ -17,7 +18,9 @@ let myStream;
 let mute = false;
 let cameraOff = false;
 let roomName;
+let nickName;
 let myPeerConnection;
+let myDataChannel;
 
 async function getCameras(){
     try{
@@ -38,7 +41,6 @@ async function getCameras(){
         console.log(e);
     }
 }
-
 async function getMedia(deviceId){
     const initialConstrains = {
         audio : true,
@@ -54,14 +56,15 @@ async function getMedia(deviceId){
         );
         myFace.srcObject = myStream;
         if(!deviceId){
+            myStream.getAudioTracks().forEach((track) => {
+                track.enabled = false;
+            })
             await getCameras();
         } 
     }catch(e){
         console.log(e);
     }
 }
-
-
 function handleMute(){
     myStream.getAudioTracks().forEach((track) => {
         track.enabled = !track.enabled;
@@ -87,7 +90,6 @@ function handleCamera(){
         cameraOff = true;
     }
 }
-
 async function handleCameraChange(){
     await getMedia(camerasSelect.value);
     if(myPeerConnection){
@@ -98,8 +100,6 @@ async function handleCameraChange(){
         videoSender.replaceTrack(videoTrack);
     }
 }
-
-
 async function initCall(){
     welcome.hidden = true;
     call.hidden = false;
@@ -107,22 +107,61 @@ async function initCall(){
     makeConnection();
 
 }
-
 async function handleWelcomeSubmit(event){
     event.preventDefault();
-    const input = welcomeForm.querySelector("input");
+    const inputRoomName = welcomeForm.querySelector("#roomName");
+    const inputNickName = welcomeForm.querySelector("#nickName");
     await initCall();
-    socket.emit("join_room", input.value);
-    roomName = input.value;
-    input.value = "";
+    socket.emit("join_room", inputRoomName.value, inputNickName.value);
+    roomName = inputRoomName.value;
+    nickName = inputNickName.value;
+    inputRoomName.value, inputNickName.value = "";
+
+    const showRoomName = document.getElementById("showRoomName");
+    const h1 = document.createElement("h1");
+    h1.innerText = `room : ${roomName}`;
+    showRoomName.appendChild(h1);
 
 }
-
 welcomeForm = welcome.querySelector("form");
 welcomeForm.addEventListener("submit", handleWelcomeSubmit);
 
+
+//chat
+const chatForm = document.querySelector("#chatForm");
+const chatDiv = chatForm.querySelector("#chatDiv");
+chatForm.addEventListener("submit", chathandler);
+
+function chathandler(event){
+    event.preventDefault();
+    const input = chatDiv.querySelector("#chatDiv input");
+    const message = `${nickName} : ${input.value}`;
+    socket.emit("message", message, roomName);
+    input.value = "";
+
+    writeChat(message);
+}
+
+function writeChat(m){
+    const ul = document.querySelector("#chatDiv ul");
+    const li = document.createElement("li");
+    li.innerText = m;
+    ul.appendChild(li);
+}
+
+socket.on("message", (m) => {
+    writeChat(m);
+})
+    
+
+
 //peer A
 socket.on("welcome", async() => {
+    
+    myDataChannel = myPeerConnection.createDataChannel("chat");
+    myDataChannel.addEventListener("message", console.log);
+    console.log("made data channel");
+
     const offer = await myPeerConnection.createOffer();
     myPeerConnection.setLocalDescription(offer);
     console.log("send the offer");
@@ -131,6 +170,11 @@ socket.on("welcome", async() => {
 
 //peer B
 socket.on("offer", async(offer) => {
+    myPeerConnection.addEventListener("datachannel", (event) => {
+        myDataChannel = event.channel;
+        myDataChannel.addEventListener("message", console.log);
+    })
+
     myPeerConnection.setRemoteDescription(offer);
     console.log("recieved the offer");
     const answer = await myPeerConnection.createAnswer();
@@ -149,7 +193,6 @@ function makeConnection(){
     myPeerConnection = new RTCPeerConnection();
     myPeerConnection.addEventListener("icecandidate", handleIce);
     myPeerConnection.addEventListener("addstream", handleAddStream);
-    // console.log(myPeerConnection);
     myStream.getTracks().forEach(track => myPeerConnection.addTrack(track, myStream));
 
 }
@@ -157,7 +200,6 @@ function makeConnection(){
 function handleAddStream(data){
     const peerFace = document.getElementById("peerFace");
     peerFace.srcObject = data.stream;
-
 }
 
 //peer A

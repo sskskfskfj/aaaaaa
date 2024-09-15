@@ -30,6 +30,12 @@ ws.on("connection", socket => {
     socket.on("ice", (ice, roomName) => {
         socket.to(roomName).emit("ice", ice);
     })
+
+    //chat
+    socket.on("message", (message, roomName) => {
+        socket.to(roomName).emit("message",message);
+        console.log(message);
+    })
 });
 
 httpServer.listen(3000, handleListen);
