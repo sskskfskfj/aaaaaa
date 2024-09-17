@@ -146,91 +146,129 @@ async function initCall() {
     }
 }
 
+// 새로 들어온 피어를 환영하고 offer 생성 및 전송
 socket.on("welcome", async (fromId) => {
     console.log(`${fromId} joined`);
+    
+    // 새로운 피어와 연결 설정
     makeConnection(fromId);
     console.log(`made connection with ${fromId}`);
 
-    const offer = await peerMap.get(fromId).createOffer();
-    peerMap.get(fromId).setLocalDescription(offer);
-
-    console.log(`sent to the offer to ${fromId}`);
-    socket.emit("offer", offer, roomName);
-});
-socket.on("offer", async(offer, fromId) => {
-    console.log(`got offer from ${fromId}`);
-    console.log(myStream);
-
-    // 새로 들어온 Client와 Connection을 생성한다. (offer를 받는 쪽)
-    makeConnection(fromId);
-    console.log(`made connection with ${fromId}`);
-
-    console.log(peerMap.get(fromId));
-    peerMap.get(fromId).setRemoteDescription(offer);
-    const answer = await peerMap.get(fromId).createAnswer();
-    peerMap.get(fromId).setLocalDescription(answer);
-    console.log(peerMap.get(fromId));
-
-    
-    console.log(`sent the answer to ${fromId}`);
-    socket.emit("answer", answer, fromId);
-    
-});
-socket.on("answer", (answer, fromId) => {
-    console.log(`received the answer from ${fromId}`);
-    try{
-        peerMap.get(fromId).setRemoteDescription(answer);
-        console.log(peerMap.get(fromId));
+    // Offer 생성 및 전송
+    try {
+        const offer = await peerMap.get(fromId).createOffer();
+        await peerMap.get(fromId).setLocalDescription(offer);
+        console.log(`sent offer to ${fromId}`);
         
-    }catch(e){
-        console.log(e);
+        // offer를 특정 피어에게 전송
+        socket.emit("offer", offer, fromId);
+    } catch (error) {
+        console.error("Error creating offer:", error);
     }
-    
 });
-socket.on("ice", (ice, fromId) => {
-    console.log(`received ice from ${fromId}`);
-    peerMap.get(fromId).addIceCandidate(ice);
-});
-socket.on("bye", (fromId) => {
-    // 나간 유저의 정보를 없앤다.
-    console.log("bye " + fromId);
-    peerMap.get(fromId).close();
-    peerMap.delete(fromId);
 
-    let video = document.querySelector(`#${fromId}`);
-    streamDiv.removeChild(video);
+// Offer 수신 시 처리
+socket.on("offer", async (offer, fromId) => {
+    console.log(`got offer from ${fromId}`);
+
+    makeConnection(fromId);
+    console.log(`made connection with ${fromId}`);
+
+    try {
+        // Offer를 remote description으로 설정
+        await peerMap.get(fromId).setRemoteDescription(new RTCSessionDescription(offer));
+        
+        // Answer 생성 및 전송
+        const answer = await peerMap.get(fromId).createAnswer();
+        await peerMap.get(fromId).setLocalDescription(answer);
+        console.log(`sent the answer to ${fromId}`);
+        
+        // Answer를 원래 오퍼를 보낸 피어에게 전송
+        socket.emit("answer", answer, fromId);
+    } catch (error) {
+        console.error("Error handling offer:", error);
+    }
+});
+
+socket.on("answer", async (answer, fromId) => {
+    console.log(`received answer from ${fromId}`);
+    try {
+        // 원격 SDP를 설정하여 연결 완료
+        await peerMap.get(fromId).setRemoteDescription(new RTCSessionDescription(answer));
+        console.log("Connection established with", fromId);
+    } catch (error) {
+        console.error("Error setting remote description:", error);
+    }
+});
+
+
+socket.on("ice", async (ice, fromId) => {
+    console.log(`received ICE candidate from ${fromId}`);
+    try {
+        await peerMap.get(fromId).addIceCandidate(new RTCIceCandidate(ice));
+    } catch (error) {
+        console.error("Error adding ICE candidate:", error);
+    }
+});
+
+
+socket.on("bye", (fromId) => {
+    console.log(`bye ${fromId}`);
+    
+    if (peerMap.has(fromId)) {
+        peerMap.get(fromId).close();
+        peerMap.delete(fromId);
+        
+        let videoElement = document.querySelector(`#${fromId}`);
+        if (videoElement) {
+            videoElement.remove();
+        }
+    }
 });
 
 function makeConnection(fromId) {
     const rtcConnection = new RTCPeerConnection({
-        iceServers : [
+        iceServers: [
             {
-            urls : [
-                "stun:stun.l.google.com:19302",
-                "stun:stun.l.google.com:5349",
-                "stun:stun1.l.google.com:3478",
-                "stun:stun1.l.google.com:5349",
-                "stun:stun2.l.google.com:19302",
-            ]
-        }]
+                urls: [
+                    "stun:stun.l.google.com:19302",
+                    "stun:stun.l.google.com:5349",
+                    "stun:stun1.l.google.com:3478",
+                    "stun:stun1.l.google.com:5349",
+                    "stun:stun2.l.google.com:19302",
+                ]
+            }
+        ]
     });
-
 
     peerMap.set(fromId, rtcConnection);
-    peerMap.get(fromId).addEventListener("icecandidate", async(data) => {
-        console.log(`sent candidate to ${fromId}`);
-        socket.emit("ice", data.candidate, fromId);
-    });
-    peerMap.get(fromId).addEventListener("track", (data) => {
-        handleTrack(data, fromId);
-    });
-    if(myStream){
-        myStream.getTracks().forEach((track) => peerMap.get(fromId).addTrack(track, myStream));
 
-    }else{
-        console.log("myStream doesn't exist");
+    rtcConnection.addEventListener("icecandidate", (event) => {
+        if (event.candidate) {
+            console.log(`sent ICE candidate to ${fromId}`);
+            socket.emit("ice", event.candidate, fromId);
+        }
+    });
+
+    rtcConnection.addEventListener("track", (event) => {
+        handleTrack(event, fromId);
+    });
+
+    if (myStream) {
+        myStream.getTracks().forEach((track) => rtcConnection.addTrack(track, myStream));
+    } else {
+        console.log("No local stream available.");
     }
+
+    rtcConnection.addEventListener("signalingstatechange", () => {
+        console.log(`Connection with ${fromId} signaling state: ${rtcConnection.signalingState}`);
+    });
+
+    rtcConnection.addEventListener("iceconnectionstatechange", () => {
+        console.log(`ICE connection state with ${fromId}: ${rtcConnection.iceConnectionState}`);
+    });
 }
+
 
 function handleTrack(data, fromId) {
     let video = document.getElementById(`${fromId}`);
