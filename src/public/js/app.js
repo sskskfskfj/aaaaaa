@@ -11,6 +11,7 @@ const chatDiv = chatForm.querySelector("#chatDiv");
 const leaveBtn = document.querySelector("#leave");
 const streamDiv = document.querySelector("#myStream");
 
+
 call.hidden = true;
 let myStream;
 let mute = false;
@@ -19,6 +20,8 @@ let roomName;
 let nickName;
 let myPeerConnection;
 let pendingICECandidates = {};
+let lang;
+
 const peerMap = new Map();
 
 async function getCameras() {
@@ -87,7 +90,8 @@ async function handleWelcomeSubmit(event) {
     event.preventDefault();
     const inputRoomName = welcomeForm.querySelector("#roomName");
     const inputNickName = welcomeForm.querySelector("#nickName");
-
+    lang = welcomeForm.querySelector("select[name=lang]").value;
+    
     await initCall();
     console.log("start initCall");
     socket.emit("join_room", inputRoomName.value, inputNickName.value);
