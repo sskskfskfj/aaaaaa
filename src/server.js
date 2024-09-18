@@ -1,16 +1,22 @@
 import http from "http";
-import SocketIO from "socket.io";
+import { Server as SocketIO } from "socket.io"; // 'socket.io' 대신 'socket.io-client'에서 가져옵니다.
 import express from "express";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 app.set("view engine", "pug");
-app.set("views", __dirname + "/views");
-app.use("/public", express.static(__dirname + "/public"));
+app.set("views", `${__dirname}/views`);
+app.use("/public", express.static(`${__dirname}/public`));
+
 app.get("/", (_, res) => res.render("home"));
 app.get("/*", (_, res) => res.redirect("/"));
 
 const httpServer = http.createServer(app);
-const wsServer = SocketIO(httpServer);
+const wsServer = new SocketIO(httpServer);
 
 wsServer.on("connection", (socket) => {
   socket.on("join_room", (roomName) => {

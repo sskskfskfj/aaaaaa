@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "test" : "jest"
   },
   "description": "zoom",
   "dependencies": {
@@ -21,5 +22,6 @@
     "@babel/node": "^7.25.0",
     "@babel/preset-env": "^7.25.4",
     "nodemon": "^3.1.4"
-  }
+  },
+  "type": "module"
 }

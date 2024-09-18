@@ -1,3 +1,4 @@
+import { startRecognition, stopRecognition } from "./speech.js";
 const socket = io();
 const myFace = document.getElementById("myFace");
 const muteBtn = document.getElementById("mute");
@@ -10,7 +11,6 @@ const chatForm = document.querySelector("#chatForm");
 const chatDiv = chatForm.querySelector("#chatDiv");
 const leaveBtn = document.querySelector("#leave");
 const streamDiv = document.querySelector("#myStream");
-
 
 call.hidden = true;
 let myStream;
@@ -65,6 +65,11 @@ function handleMute() {
         myStream.getAudioTracks().forEach(track => track.enabled = !track.enabled);
         mute = !mute;
         muteBtn.innerText = mute ? "Unmute" : "Mute";
+        if(!mute){
+            startRecognition();
+        }else{
+            stopRecognition();
+        }
     }
 }
 function handleCamera() {
