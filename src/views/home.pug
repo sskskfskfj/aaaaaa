@@ -3,36 +3,35 @@ html(lang="en")
         meta(charset="UTF-8")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
         title Document
-        link(rel="stylesheet" href="https://unpkg.com/mvp.css")
+        link(rel="stylesheet", href="./public/css/style.css")
     body 
-    header 
-        div#showRoomName
+        header 
+            div#showRoomName
 
-    main
-        div#welcome
-            form 
-                input#roomName(placeholder="room name", required, type="text")
-                input#nickName(placeholder="name", required, type="text")
-                select(name = "lang")
-                    option#ko(value = "ko-KR") ko 
-                    option#en(value = "en-US") en
-                button enter room
-        div#call
-            
-            div#myStream
-                h3
-                video#myFace(autoplay, playsinline, width="400", height="400")
-                button#mute Mute
-                button#camera Turn Camera Off
-                select#cameras
-            form#chatForm
-                div#chatDiv
-                    ul 
-                    input#chat(placeholder="send chat", required, type="text")
-                    button send
-            div
-                button#leave leave 
+        main
+            div#welcome
+                form 
+                    input#roomName(placeholder="room name", required, type="text")
+                    input#nickName(placeholder="name", required, type="text")
+                    select(name="lang")
+                        option#ko(value="ko-KR") ko 
+                        option#en(value="en-US") en
+                    button enter room
+            div#call
+                div#myStream
+                    h3
+                    video#myFace(autoplay, playsinline, width="400", height="400")
+                div#streamTool
+                    button#mute Mute
+                    button#camera Turn Camera Off
+                    select#cameras
+                form#chatForm
+                    div#chatDiv
+                        ul 
+                        input#chat(placeholder="send chat", required, type="text")
+                        button send
+                div
+                    button#leave leave 
 
-    script(type="module" src="/socket.io/socket.io.js")    
-    script(type="module" src="/public/js/app.js")
-    
+        script(type="module" src="/socket.io/socket.io.js")    
+        script(type="module" src="/public/js/app.js")

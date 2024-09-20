@@ -1,0 +1,183 @@
+/* 기본적인 레이아웃 설정 */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+header {
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    text-align: center;
+}
+
+main {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+#welcome {
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+input, select, button {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+input[type="text"] {
+    width: 70%;
+}
+
+button {
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* myStream 내부의 레이아웃 설정 */
+#myStream {
+    display: flex;
+    flex-wrap: wrap; /* 비디오가 여러 줄로 나란히 배치되도록 설정 */
+    gap: 20px;
+    justify-content: flex-start;
+    margin-top: 20px;
+}
+
+/* 각 비디오 및 그 하단의 streamTool 요소들을 하나의 박스로 묶음 */
+.streamContainer {
+    display: inline-block;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    width: 300px; /* 각 비디오 및 하단 컨트롤 요소의 너비를 고정 */
+    margin-bottom: 20px;
+}
+
+/* 비디오 스타일 */
+#myStream video {
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 30%; /* 비디오 너비를 컨테이너 너비에 맞춤 */
+    height: auto; /* 비율 유지 */
+}
+
+/* streamTool 컨트롤 요소들 */
+#streamTool {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-right: 10px;
+    width: 30%;
+}
+
+/* streamTool 안의 버튼과 선택 상자 스타일 */
+#streamTool button, #streamTool select {
+    padding: 5px;
+    margin-right: 10px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 50%;
+}
+
+#streamTool button:hover {
+    background-color: #0056b3;
+}
+
+/* 카메라 전환 및 음소거 버튼 구분 */
+#camera {
+    background-color: #007bff;
+}
+
+#mute {
+    background-color: #ffc107; /* 음소거는 노란색 */
+}
+
+#mute:hover {
+    background-color: #e0a800; /* hover 시 어두운 노란색 */
+}
+
+/* 선택 상자 스타일 */
+#streamTool select {
+    background-color: white;
+    color: black;
+    border: 1px solid #ccc;
+}
+
+/* 채팅 폼 스타일 */
+#chatDiv {
+    margin-bottom: 10px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#chat {
+    width: 100%;
+}
+
+/* leave 버튼 스타일 */
+#leave {
+    background-color: #dc3545;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#leave:hover {
+    background-color: #c82333;
+}
+
+/* 작은 화면에 대응하는 반응형 디자인 */
+@media (max-width: 768px) {
+    #myStream {
+        justify-content: center; /* 작은 화면에서는 비디오가 가운데 정렬되도록 */
+    }
+
+    .streamContainer {
+        width: 100%; /* 작은 화면에서 컨테이너의 너비를 100%로 */
+    }
+
+    #myStream video {
+        max-width: 100%; /* 비디오를 화면 너비에 맞춤 */
+    }
+
+    #streamTool button, #streamTool select {
+        width: 100%; /* 작은 화면에서는 버튼과 선택 상자가 전체 너비를 차지 */
+        margin-top: 5px;
+    }
+}

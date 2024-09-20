@@ -180,8 +180,6 @@ function writeChat(message) {
     li.innerText = message;
     ul.appendChild(li);
 }
-
-
 socket.on("message", writeChat);
 
 async function initCall() {
@@ -195,7 +193,6 @@ async function initCall() {
     }
 }
 
-// 새로 들어온 피어를 환영하고 offer 생성 및 전송
 socket.on("welcome", async (fromId) => {
     console.log(`${fromId} joined`);
     
@@ -312,7 +309,6 @@ function makeConnection(fromId) {
         console.log(`ICE connection state with ${fromId}: ${rtcConnection.iceConnectionState}`);
     });
 }
-
 
 function handleTrack(data, fromId) {
     let video = document.getElementById(`${fromId}`);
