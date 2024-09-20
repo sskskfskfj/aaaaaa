@@ -1,11 +1,12 @@
 import { startRecognition, stopRecognition } from "./speech.js";
+
 const socket = io();
 const myFace = document.getElementById("myFace");
 const muteBtn = document.getElementById("mute");
 const cameraBtn = document.getElementById("camera");
 const camerasSelect = document.getElementById("cameras");
 const welcome = document.getElementById("welcome");
-const call = document.getElementById("call");
+const call = document.querySelector("#call");
 const welcomeForm = document.querySelector("#welcome form");
 const chatForm = document.querySelector("#chatForm");
 const chatDiv = chatForm.querySelector("#chatDiv");
@@ -13,6 +14,7 @@ const leaveBtn = document.querySelector("#leave");
 const streamDiv = document.querySelector("#myStream");
 
 call.hidden = true;
+welcome.hidden = false;
 let myStream;
 let mute = false;
 let cameraOff = false;
@@ -21,8 +23,11 @@ let nickName;
 let myPeerConnection;
 let pendingICECandidates = {};
 let lang;
+let voiceMessage = '';
+let isRecognizing = false;
 
 const peerMap = new Map();
+
 
 async function getCameras() {
     try {
@@ -60,18 +65,50 @@ async function getMedia(deviceId) {
         console.error(e);
     }
 }
+
 function handleMute() {
     if (myStream) {
         myStream.getAudioTracks().forEach(track => track.enabled = !track.enabled);
         mute = !mute;
-        muteBtn.innerText = mute ? "Unmute" : "Mute";
-        if(!mute){
-            startRecognition();
-        }else{
+        muteBtn.innerText = mute ? "Mute" : "UnMute";
+        if(mute){
+            console.log("mute");
+            handleVoiceRecognition()
+            
+            isRecognizing = !isRecognizing;
+            
+            
+            
+        }else{ 
+            console.log("unmute");
             stopRecognition();
         }
     }
 }
+export function setVoiceMessage(newMessage) {
+    voiceMessage = newMessage;
+    handleVoiceMessage();  // 새로운 음성 메시지가 설정되면 호출
+}
+export async function handleVoiceRecognition() {
+    if (mute && !isRecognizing) {  // mute 상태가 아니고 인식이 시작되지 않은 경우
+        isRecognizing = true;  // 인식 상태 설정
+        try {
+            await startRecognition();
+            isRecognizing = false;  // 음성 인식 시작 (다른 파일의 함수)
+        } catch (error) {
+            console.error(error);
+        }
+    }
+}
+function handleVoiceMessage() {
+    if (voiceMessage) {
+        const message = `${nickName} : ${voiceMessage}`;
+        writeChat(message);  
+        socket.emit("message", message, roomName);  
+        voiceMessage = "";  
+    }
+}
+
 function handleCamera() {
     if (myStream) {
         myStream.getVideoTracks().forEach(track => track.enabled = !track.enabled);
@@ -79,6 +116,7 @@ function handleCamera() {
         cameraBtn.innerText = cameraOff ? "Turn Camera On" : "Turn Camera Off";
     }
 }
+
 async function handleCameraChange() {
     await getMedia(camerasSelect.value);
     if (myPeerConnection) {
@@ -142,6 +180,8 @@ function writeChat(message) {
     li.innerText = message;
     ul.appendChild(li);
 }
+
+
 socket.on("message", writeChat);
 
 async function initCall() {
@@ -176,7 +216,6 @@ socket.on("welcome", async (fromId) => {
     }
 });
 
-// Offer 수신 시 처리
 socket.on("offer", async (offer, fromId) => {
     console.log(`got offer from ${fromId}`);
 
@@ -209,8 +248,6 @@ socket.on("answer", async (answer, fromId) => {
         console.error("Error setting remote description:", error);
     }
 });
-
-
 socket.on("ice", async (ice, fromId) => {
     console.log(`received ICE candidate from ${fromId}`);
     try {
@@ -219,8 +256,6 @@ socket.on("ice", async (ice, fromId) => {
         console.error("Error adding ICE candidate:", error);
     }
 });
-
-
 socket.on("bye", (fromId) => {
     console.log(`bye ${fromId}`);
     

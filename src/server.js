@@ -4,6 +4,7 @@ import express from "express";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -17,6 +18,7 @@ app.get("/*", (_, res) => res.redirect("/"));
 
 const httpServer = http.createServer(app);
 const wsServer = new SocketIO(httpServer);
+
 
 wsServer.on("connection", (socket) => {
   socket.on("join_room", (roomName) => {
@@ -54,7 +56,24 @@ wsServer.on("connection", (socket) => {
       socket.to(room).emit("bye", id);
     });
   });
+
 });
+
+export const fetchResult = async (textValue) => {
+  try {
+      const response = await axios({
+          method: 'POST',
+          url: "http://127.0.0.1:5000/tran",
+          data: {
+              text: textValue
+          }
+      });
+      return { result: response.data };
+  } catch (error) {
+      throw new Error(`Error fetching result: ${error.message}`);
+  }
+};
+
 
 const handleListen = () => console.log(`Listening on http://localhost:3000`);
 httpServer.listen(3000, handleListen);
