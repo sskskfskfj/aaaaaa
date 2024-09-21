@@ -107,7 +107,6 @@ button:hover {
     background-color: #0056b3;
 }
 
-/* 카메라 전환 및 음소거 버튼 구분 */
 #camera {
     background-color: #007bff;
 }
@@ -141,7 +140,10 @@ ul {
     padding: 0;
     margin: 0;
 }
-
+ul li{
+    list-style: none;
+    color: #000;
+}
 #chat {
     width: 100%;
 }
