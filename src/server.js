@@ -75,5 +75,5 @@ export const fetchResult = async (textValue) => {
 };
 
 
-const handleListen = () => console.log(`Listening on http://localhost:3000`);
-httpServer.listen(3000, handleListen);
+const handleListen = () => console.log(`server listening`);
+httpServer.listen(80, handleListen);
