@@ -94,7 +94,7 @@ export async function handleVoiceRecognition() {
         isRecognizing = true;  // 인식 상태 설정
         try {
             await startRecognition();
-            isRecognizing = false;  // 음성 인식 시작 (다른 파일의 함수)
+            isRecognizing = false;  
         } catch (error) {
             console.error(error);
         }

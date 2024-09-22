@@ -1,4 +1,5 @@
 import { handleVoiceRecognition, setVoiceMessage} from "./app.js";
+import { fetchResult } from "../../server.js";
 
 const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
 recognition.continuous = false; 
@@ -30,6 +31,7 @@ export async function startRecognition() {
                 .map(result => result[0].transcript)
                 .join('');
             
+            let resultTran = fetchResult(transcript);
             console.log(`인식된 텍스트: ${transcript}`);
             setVoiceMessage(transcript);  // 음성 메시지 설정
             resolve(transcript);  // 인식된 텍스트 반환
@@ -59,4 +61,8 @@ export function stopRecognition() {
         isRecognitionActive = false;
     },100)
     
+}
+
+function tranReq(){
+
 }
