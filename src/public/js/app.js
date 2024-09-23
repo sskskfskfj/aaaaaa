@@ -22,12 +22,14 @@ let roomName;
 let nickName;
 let myPeerConnection;
 let pendingICECandidates = {};
-let lang;
+let lang = '';
 let voiceMessage = '';
 let isRecognizing = false;
-
 const peerMap = new Map();
 
+export function getLang(){
+    return lang;
+}
 
 async function getCameras() {
     try {
@@ -72,16 +74,13 @@ function handleMute() {
         mute = !mute;
         muteBtn.innerText = mute ? "Mute" : "UnMute";
         if(mute){
+            handleVoiceRecognition();
             console.log("mute");
-            handleVoiceRecognition()
-            
             isRecognizing = !isRecognizing;
-            
-            
-            
         }else{ 
-            console.log("unmute");
             stopRecognition();
+            console.log("unmute");
+            
         }
     }
 }
@@ -93,8 +92,9 @@ export async function handleVoiceRecognition() {
     if (mute && !isRecognizing) {  // mute 상태가 아니고 인식이 시작되지 않은 경우
         isRecognizing = true;  // 인식 상태 설정
         try {
-            await startRecognition();
-            isRecognizing = false;  
+            
+            await startRecognition()
+            setTimeout(() => {isRecognizing = false},0)
         } catch (error) {
             console.error(error);
         }
@@ -134,6 +134,7 @@ async function handleWelcomeSubmit(event) {
     const inputRoomName = welcomeForm.querySelector("#roomName");
     const inputNickName = welcomeForm.querySelector("#nickName");
     lang = welcomeForm.querySelector("select[name=lang]").value;
+    console.log(lang);
     
     await initCall();
     console.log("start initCall");

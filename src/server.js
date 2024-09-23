@@ -3,7 +3,7 @@ import { Server as SocketIO } from "socket.io"; // 'socket.io' 대신 'socket.io
 import express from "express";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
-
+import cors from 'cors';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -11,7 +11,14 @@ const __dirname = dirname(__filename);
 const app = express();
 app.set("view engine", "pug");
 app.set("views", `${__dirname}/views`);
+
 app.use("/public", express.static(`${__dirname}/public`));
+app.use(cors({
+  origin: 'http://localhost:3000',  // Allow requests only from this origin
+  methods: ['GET', 'POST'],         // Allow only these HTTP methods
+  allowedHeaders: ['Content-Type'], // Allow specific headers
+  credentials: true                 // If your frontend needs to send cookies/auth headers
+}));
 
 app.get("/", (_, res) => res.render("home"));
 app.get("/*", (_, res) => res.redirect("/"));
@@ -59,21 +66,6 @@ wsServer.on("connection", (socket) => {
 
 });
 
-export const fetchResult = async (textValue) => {
-  try {
-      const response = await axios({
-          method: 'POST',
-          url: "http://127.0.0.1:5000/app/tran",
-          data: {
-              text: textValue
-          }
-      });
-      return { result: response.data };
-  } catch (error) {
-      throw new Error(`Error fetching result: ${error.message}`);
-  }
-};
-
 
 const handleListen = () => console.log(`server listening`);
-httpServer.listen(80, handleListen);
+httpServer.listen(3000, handleListen);
