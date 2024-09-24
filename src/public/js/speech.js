@@ -42,7 +42,7 @@ export async function startRecognition() {
                 return;
             }
 
-            let resultTran = fetchResult(transcript);
+            // let resultTran = fetchResult(transcript);
             if(getLang() == 'ko-KR'){
                 console.log("한국");
             }else{
@@ -72,12 +72,19 @@ export async function startRecognition() {
 
 
 export function stopRecognition() {
-    recognition.stop();
+    console.log("음성 인식 중지 요청");
+
+    // 이벤트 리스너 제거
+    recognition.onresult = null;
+    recognition.onerror = null;
+    recognition.onend = null;
+
+    recognition.stop();  // 음성 인식 중지
+    isRecognitionActive = false;  // 중지 후 상태 초기화
+
     setTimeout(() => {
         console.log("음성 인식이 중지되었습니다.");
-        isRecognitionActive = false;
-    },100)
-    
+    }, 200);
 }
 
 export const fetchResult = async (textValue) => {
