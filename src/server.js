@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import { dirname } from "path";
 import cors from 'cors';
 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -14,7 +15,7 @@ app.set("views", `${__dirname}/views`);
 
 app.use("/public", express.static(`${__dirname}/public`));
 app.use(cors({
-  origin: 'http://localhost:3000',  // Allow requests only from this origin
+  origin: 'http://3.38.41.53:80',  // Allow requests only from this origin
   methods: ['GET', 'POST'],         // Allow only these HTTP methods
   allowedHeaders: ['Content-Type'], // Allow specific headers
   credentials: true                 // If your frontend needs to send cookies/auth headers
